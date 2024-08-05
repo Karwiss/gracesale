@@ -1,0 +1,130 @@
+<?php
+include 'database.php'; // Include database connection file
+
+function insertData($table, $data) {
+    global $conn; // Use global $conn for database connection
+
+    // Prepare the SQL statement with placeholders
+    $columns = implode(", ", array_keys($data));
+    $placeholders = implode(", ", array_fill(0, count($data), '?'));
+    $sql = "INSERT INTO $table ($columns) VALUES ($placeholders)";
+
+    // Prepare the statement
+    $stmt = mysqli_prepare($conn, $sql);
+    if (!$stmt) {
+        echo "Error preparing statement: " . mysqli_error($conn) . "<br>";
+        return;
+    }
+
+    // Bind parameters
+    $types = str_repeat('s', count($data)); // Assuming all inputs are strings
+    mysqli_stmt_bind_param($stmt, $types, ...array_values($data));
+
+    // Execute the statement
+    if (mysqli_stmt_execute($stmt)) {
+        echo "Data inserted successfully into $table.<br>";
+    } else {
+        echo "Error inserting data into $table: " . mysqli_stmt_error($stmt) . "<br>";
+    }
+
+    // Close the statement
+    mysqli_stmt_close($stmt);
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Sanitize and retrieve POST data
+    $contract_number = htmlspecialchars($_POST['contract_number'] ?? '');
+    $generated_date = htmlspecialchars($_POST['generated_date'] ?? '');
+    $Bid_Number_Against_Contract = htmlspecialchars($_POST['Bid_Number_Against_Contract'] ?? '');
+
+    // Access nested arrays and sanitize
+    $organisation_details = $_POST['organisation_details'] ?? [];
+    $buyer_details = $_POST['buyer_details'] ?? [];
+    $financial_approval_details = $_POST['financial_approval_details'] ?? [];
+    $paying_authority_details = $_POST['paying_authority_details'] ?? [];
+    $seller_deal = $_POST['seller_deal'] ?? [];
+    $product_details = $_POST['product_details'][0] ?? []; // Assuming single product detail for now
+    $consignee_details = $_POST['consignee_details'][0] ?? []; // Assuming single consignee detail for now
+    $product_specifications = $_POST['product_specifications'] ?? [];
+
+    // Display data
+    echo "Contract Number: " . $contract_number . "<br>";
+    echo "Generated Date: " . $generated_date . "<br>";
+    echo "Bid Number Against Contract: " . $Bid_Number_Against_Contract . "<br>";
+
+    // Display organisation_details
+    echo "Organisation Details:<br>";
+    echo "Type: " . htmlspecialchars($organisation_details['type'] ?? 'Not provided') . "<br>";
+    echo "Ministry: " . htmlspecialchars($organisation_details['ministry'] ?? 'Not provided') . "<br>";
+    echo "Department: " . htmlspecialchars($organisation_details['department'] ?? 'Not provided') . "<br>";
+    echo "Organisation Name: " . htmlspecialchars($organisation_details['organisation_name'] ?? 'Not provided') . "<br>";
+    echo "Office Zone: " . htmlspecialchars($organisation_details['office_zone'] ?? 'Not provided') . "<br>";
+    echo "Address: " . htmlspecialchars($organisation_details['address'] ?? 'Not provided') . "<br>";
+
+    // Display buyer_details
+    echo "Buyer Details:<br>";
+    echo "Designation: " . htmlspecialchars($buyer_details['designation'] ?? 'Not provided') . "<br>";
+    echo "Contact No: " . htmlspecialchars($buyer_details['contact_no'] ?? 'Not provided') . "<br>";
+    echo "Email ID: " . htmlspecialchars($buyer_details['email_id'] ?? 'Not provided') . "<br>";
+    echo "GSTIN: " . htmlspecialchars($buyer_details['gstin'] ?? 'Not provided') . "<br>";
+
+    // Display financial_approval_details
+    echo "Financial Approval Details:<br>";
+    echo "IFD Concurrence: " . htmlspecialchars($financial_approval_details['ifd_concurrence'] ?? 'Not provided') . "<br>";
+
+    // Display paying_authority_details
+    echo "Paying Authority Details:<br>";
+    echo "CEO: " . htmlspecialchars($paying_authority_details['ceo'] ?? 'Not provided') . "<br>";
+    echo "Payment Mode: " . htmlspecialchars($paying_authority_details['payment_mode'] ?? 'Not provided') . "<br>";
+    echo "Pay Designation: " . htmlspecialchars($paying_authority_details['paydesignation'] ?? 'Not provided') . "<br>";
+    echo "Email ID: " . htmlspecialchars($paying_authority_details['email_id'] ?? 'Not provided') . "<br>";
+    echo "GSTIN: " . htmlspecialchars($paying_authority_details['gstin'] ?? 'Not provided') . "<br>";
+    echo "Address: " . htmlspecialchars($paying_authority_details['address'] ?? 'Not provided') . "<br>";
+
+    // Display seller_deal
+    echo "Seller Deal:<br>";
+    echo "Company Seller ID Name: " . htmlspecialchars($seller_deal['company_seller_id_name'] ?? 'Not provided') . "<br>";
+    echo "Contact No: " . htmlspecialchars($seller_deal['contact_no'] ?? 'Not provided') . "<br>";
+    echo "Email ID: " . htmlspecialchars($seller_deal['email_id'] ?? 'Not provided') . "<br>";
+    echo "Address: " . htmlspecialchars($seller_deal['address'] ?? 'Not provided') . "<br>";
+    echo "Udyam: " . htmlspecialchars($seller_deal['udyam'] ?? 'Not provided') . "<br>";
+    echo "MSME Registration Number: " . htmlspecialchars($seller_deal['msme_registration_number'] ?? 'Not provided') . "<br>";
+    echo "MSE Social Category: " . htmlspecialchars($seller_deal['mse_social_category'] ?? 'Not provided') . "<br>";
+    echo "MSE Gender: " . htmlspecialchars($seller_deal['mse_gender'] ?? 'Not provided') . "<br>";
+    echo "GSTIN: " . htmlspecialchars($seller_deal['gstin'] ?? 'Not provided') . "<br>";
+
+    // Display product_details
+    echo "Product Details:<br>";
+    foreach ($product_details as $product) {
+        echo "Product Name: " . htmlspecialchars($product['product_name'] ?? 'Not provided') . "<br>";
+        echo "Quantity: " . htmlspecialchars($product['quantity'] ?? 'Not provided') . "<br>";
+        echo "Unit Price: " . htmlspecialchars($product['unit_price'] ?? 'Not provided') . "<br>";
+        echo "Total Price: " . htmlspecialchars($product['total_price'] ?? 'Not provided') . "<br>";
+        echo "Brand: " . htmlspecialchars($product['brand'] ?? 'Not provided') . "<br>";
+        echo "Brand Type: " . htmlspecialchars($product['brand_type'] ?? 'Not provided') . "<br>";
+        echo "Catalogue Status: " . htmlspecialchars($product['catalogue_status'] ?? 'Not provided') . "<br>";
+        echo "Selling As: " . htmlspecialchars($product['selling_as'] ?? 'Not provided') . "<br>";
+        echo "Category Name Quadrant: " . htmlspecialchars($product['category_name_quadrant'] ?? 'Not provided') . "<br>";
+    }
+
+    // Insert data into respective tables
+    insertData('contracts', [
+        'contract_number' => $contract_number,
+        'generated_date' => $generated_date,
+        'Bid_Number_Against_Contract' => $Bid_Number_Against_Contract
+    ]);
+
+    insertData('organisation_details', $organisation_details);
+    insertData('buyer_details', $buyer_details);
+    insertData('financial_approval_details', $financial_approval_details);
+    insertData('paying_authority_details', $paying_authority_details);
+    insertData('seller_deal', $seller_deal);
+    insertData('product_details', $product_details);
+    insertData('consignee_details', $consignee_details);
+    insertData('product_specifications', $product_specifications);
+
+    echo "All data inserted successfully!";
+} else {
+    echo "Invalid request.";
+}
+?>
